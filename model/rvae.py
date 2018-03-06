@@ -36,7 +36,7 @@ class RVAE(nn.Module):
         logvar = self.context_to_logvar(context)
         std = t.exp(0.5 * logvar)
         return mu, std
-        
+
     def forward(self, drop_prob,
                 encoder_word_input=None, encoder_character_input=None,
                 decoder_word_input=None, decoder_character_input=None,
@@ -149,10 +149,6 @@ class RVAE(nn.Module):
         seq_len, 
         seed, 
         use_cuda):
-        seed = Variable(t.from_numpy(seed).float())
-        if use_cuda:
-            seed = seed.cuda()
-
         decoder_word_input_np, decoder_character_input_np = batch_loader.go_input(1)
 
         # print('decoder word input : ', decoder_word_input_np)
