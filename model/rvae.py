@@ -27,6 +27,16 @@ class RVAE(nn.Module):
 
         self.decoder = Decoder(self.params)
 
+    def encode_to_mu_std(self, encoder_word_input, encoder_character_input):
+        encoder_input = self.embedding(encoder_word_input, encoder_character_input)
+
+        context = self.encoder(encoder_input)
+
+        mu = self.context_to_mu(context)
+        logvar = self.context_to_logvar(context)
+        std = t.exp(0.5 * logvar)
+        return mu, std
+        
     def forward(self, drop_prob,
                 encoder_word_input=None, encoder_character_input=None,
                 decoder_word_input=None, decoder_character_input=None,
@@ -61,13 +71,7 @@ class RVAE(nn.Module):
             '''
             [batch_size, _] = encoder_word_input.size()
 
-            encoder_input = self.embedding(encoder_word_input, encoder_character_input)
-
-            context = self.encoder(encoder_input)
-
-            mu = self.context_to_mu(context)
-            logvar = self.context_to_logvar(context)
-            std = t.exp(0.5 * logvar)
+            mu, std = self.encode_to_mu_std(encoder_word_input, encoder_character_input)
 
             z = Variable(t.randn([batch_size, self.params.latent_variable_size]))
             if use_cuda:
@@ -140,7 +144,11 @@ class RVAE(nn.Module):
 
         return validate
 
-    def sample(self, batch_loader, seq_len, seed, use_cuda):
+    def sample(self, 
+        batch_loader,
+        seq_len, 
+        seed, 
+        use_cuda):
         seed = Variable(t.from_numpy(seed).float())
         if use_cuda:
             seed = seed.cuda()
@@ -148,9 +156,12 @@ class RVAE(nn.Module):
         decoder_word_input_np, decoder_character_input_np = batch_loader.go_input(1)
 
         # print('decoder word input : ', decoder_word_input_np)
-        
+
         decoder_word_input = Variable(t.from_numpy(decoder_word_input_np).long())
         decoder_character_input = Variable(t.from_numpy(decoder_character_input_np).long())
+
+        print('seed ', seed.size())
+        print('decoder_word_input', decoder_word_input.size())
 
         if use_cuda:
             decoder_word_input, decoder_character_input = decoder_word_input.cuda(), decoder_character_input.cuda()
