@@ -8,6 +8,7 @@ from torch.optim import Adam
 from utils.batch_loader import BatchLoader
 from utils.parameters import Parameters
 from model.rvae import RVAE
+from paraphrase import build_paraphrase
 
 if __name__ == "__main__":
 
@@ -19,12 +20,12 @@ if __name__ == "__main__":
                         help='num iterations (default: 120000)')
     parser.add_argument('--batch-size', type=int, default=32, metavar='BS',
                         help='batch size (default: 32)')
-    parser.add_argument('--use-cuda', type=bool, default=False, metavar='CUDA',
+    parser.add_argument('--use-cuda', type=bool, default=True, metavar='CUDA',
                         help='use cuda (default: True)')
     parser.add_argument('--learning-rate', type=float, default=0.00005, metavar='LR',
                         help='learning rate (default: 0.00005)')
-    parser.add_argument('--dropout', type=float, default=0.3, metavar='DR',
-                        help='dropout (default: 0.3)')
+    parser.add_argument('--dropout', type=float, default=0.5, metavar='DR',
+                        help='dropout (default: 0.4)')
     parser.add_argument('--use-trained', type=bool, default=False, metavar='UT',
                         help='load pretrained model (default: False)')
     parser.add_argument('--ce-result', default='', metavar='CE',
@@ -71,7 +72,7 @@ if __name__ == "__main__":
             print(coef)
             print('------------------------------')
 
-        if iteration % 10 == 0:
+        if iteration % 100 == 0:
             cross_entropy, kld = validate(args.batch_size, args.use_cuda)
 
             cross_entropy = cross_entropy.data.cpu().numpy()[0]
@@ -88,15 +89,14 @@ if __name__ == "__main__":
             ce_result += [cross_entropy]
             kld_result += [kld]
 
-        if iteration % 20 == 0:
-            seed = np.random.normal(size=[1, parameters.latent_variable_size])
-
-            sample = rvae.sample(batch_loader, 50, seed, args.use_cuda)
-
+        if iteration % 100 == 0:
+            source = 'i want to buy a book'
+            result = build_paraphrase(source, batch_loader, rvae, args, parameters)
             print('\n')
             print('------------SAMPLE------------')
             print('------------------------------')
-            print(sample)
+            print('source', source)
+            print('sample', result)
             print('------------------------------')
 
     t.save(rvae.state_dict(), 'trained_RVAE')

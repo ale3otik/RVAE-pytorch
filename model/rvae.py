@@ -27,15 +27,14 @@ class RVAE(nn.Module):
 
         self.decoder = Decoder(self.params)
 
-    def encode_to_mu_std(self, encoder_word_input, encoder_character_input):
+    def encode_to_mu_logvar(self, encoder_word_input, encoder_character_input):
         encoder_input = self.embedding(encoder_word_input, encoder_character_input)
 
         context = self.encoder(encoder_input)
 
         mu = self.context_to_mu(context)
         logvar = self.context_to_logvar(context)
-        std = t.exp(0.5 * logvar)
-        return mu, std
+        return mu, logvar
 
     def forward(self, drop_prob,
                 encoder_word_input=None, encoder_character_input=None,
@@ -71,12 +70,12 @@ class RVAE(nn.Module):
             '''
             [batch_size, _] = encoder_word_input.size()
 
-            mu, std = self.encode_to_mu_std(encoder_word_input, encoder_character_input)
-
+            mu, logvar = self.encode_to_mu_logvar(encoder_word_input, encoder_character_input)
+            std = t.exp(0.5 * logvar)
+            
             z = Variable(t.randn([batch_size, self.params.latent_variable_size]))
             if use_cuda:
                 z = z.cuda()
-
             z = z * std + mu
 
             kld = (-0.5 * t.sum(logvar - t.pow(mu, 2) - t.exp(logvar) + 1, 1)).mean().squeeze()
