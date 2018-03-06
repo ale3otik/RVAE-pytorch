@@ -147,6 +147,8 @@ class RVAE(nn.Module):
 
         decoder_word_input_np, decoder_character_input_np = batch_loader.go_input(1)
 
+        # print('decoder word input : ', decoder_word_input_np)
+        
         decoder_word_input = Variable(t.from_numpy(decoder_word_input_np).long())
         decoder_character_input = Variable(t.from_numpy(decoder_character_input_np).long())
 
