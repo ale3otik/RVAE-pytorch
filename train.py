@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
         cross_entropy, kld, coef = train_step(iteration, args.batch_size, args.use_cuda, args.dropout)
 
-        if iteration % 5 == 0:
+        if iteration % 100 == 0:
             print('\n')
             print('------------TRAIN-------------')
             print('----------ITERATION-----------')
@@ -72,7 +72,7 @@ if __name__ == "__main__":
             print(coef)
             print('------------------------------')
 
-        if iteration % 100 == 0:
+        if iteration % 300 == 0:
             cross_entropy, kld = validate(args.batch_size, args.use_cuda)
 
             cross_entropy = cross_entropy.data.cpu().numpy()[0]
@@ -89,7 +89,7 @@ if __name__ == "__main__":
             ce_result += [cross_entropy]
             kld_result += [kld]
 
-        if iteration % 100 == 0:
+        if iteration % 300 == 0:
             source = 'i want to buy a book'
             result = build_paraphrase(source, batch_loader, rvae, args, parameters)
             print('\n')
