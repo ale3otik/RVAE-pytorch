@@ -24,7 +24,7 @@ if __name__ == "__main__":
                         help='use cuda (default: True)')
     parser.add_argument('--learning-rate', type=float, default=0.00005, metavar='LR',
                         help='learning rate (default: 0.00005)')
-    parser.add_argument('--dropout', type=float, default=0.5, metavar='DR',
+    parser.add_argument('--dropout', type=float, default=0.4, metavar='DR',
                         help='dropout (default: 0.4)')
     parser.add_argument('--use-trained', type=bool, default=False, metavar='UT',
                         help='load pretrained model (default: False)')
