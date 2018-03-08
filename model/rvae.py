@@ -110,7 +110,7 @@ class RVAE(nn.Module):
             target = target.view(-1)
             cross_entropy = F.cross_entropy(logits, target)
 
-            loss = 79 * cross_entropy + kld_coef(i) * kld
+            loss = 79 * cross_entropy + self.params.kld_final_weight * kld_coef(i) * kld
 
             optimizer.zero_grad()
             loss.backward()

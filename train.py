@@ -32,7 +32,6 @@ if __name__ == "__main__":
                         help='ce result path (default: '')')
     parser.add_argument('--kld-result', default='', metavar='KLD',
                         help='ce result path (default: '')')
-
     args = parser.parse_args()
 
     batch_loader = BatchLoader('')

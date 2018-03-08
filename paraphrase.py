@@ -36,6 +36,8 @@ def build_paraphrase(input_phrase, batch_loader, rvae, args, parameters):
         z = z.cuda()
     # transform into N(mu , std**2)
     z = z * std + mu
+    print('std', std)
+    print('mu', mu)
 
     result = rvae.sample(batch_loader, 50, z, args.use_cuda)
     return result
