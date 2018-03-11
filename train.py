@@ -45,7 +45,7 @@ if __name__ == "__main__":
     if args.use_trained:
         rvae.load_state_dict(t.load('trained_RVAE_' + args.model_name))
         ce_result = list(np.load('ce_result_{}.npy'.format(args.model_name)))
-        kld_result = list(np.load('kld_result_npy_{}'.format(args.model_name)))
+        kld_result = list(np.load('kld_result_npy_{}.npy'.format(args.model_name)))
 
     if args.use_cuda:
         rvae = rvae.cuda()
