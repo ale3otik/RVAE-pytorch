@@ -106,7 +106,7 @@ if __name__ == "__main__":
             print('------------------------------')
 
         # save model
-        if iteration % 10000 == 0 or iteration == (args.num_iterations - 1):
+        if iteration % 1000 == 0 or iteration == (args.num_iterations - 1):
             t.save(rvae.state_dict(), 'saved_models/trained_RVAE_' + args.model_name)
             np.save('saved_models/ce_result_{}.npy'.format(args.model_name), np.array(ce_result))
             np.save('saved_models/kld_result_npy_{}'.format(args.model_name), np.array(kld_result))
