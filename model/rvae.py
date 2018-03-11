@@ -141,7 +141,7 @@ class RVAE(nn.Module):
             prediction = prediction.data.cpu().numpy()
             target = target.data.cpu().numpy()
             
-            target_onhot = np.zeros([target.size()[-1], self.params.word_vocab_size], dtype=np.int32)
+            target_onhot = np.zeros([target.shape()[-1], self.params.word_vocab_size], dtype=np.int32)
             print(target_onhot.shape(), prediction.shape())
 
             target_onhot[target] = 1
