@@ -140,11 +140,16 @@ class RVAE(nn.Module):
             print(prediction.size(), target.size())
             prediction = prediction.data.cpu().numpy()
             target = target.data.cpu().numpy()
+            
+            target_onhot = np.zeros([target.size()[-1], self.params.word_vocab_size], dtype=np.int32)
+            print(target_onhot.shape(), prediction.shape())
 
-            predicted_sentence = ''.join(
+            target_onhot[target] = 1
+
+            predicted_sentence = ' '.join(
                 [batch_loader.sample_most_probable_word(d) for d in prediction])
-            target_sentence = ''.join(
-                [batch_loader.sample_most_probable_word(d) for d in target])
+            target_sentence = ' '.join(
+                [batch_loader.sample_most_probable_word(d) for d in target_onhot])
 
             return target_sentence, predicted_sentence
 
