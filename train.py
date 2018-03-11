@@ -43,9 +43,9 @@ if __name__ == "__main__":
     kld_result = []
 
     if args.use_trained:
-        rvae.load_state_dict(t.load('trained_RVAE_' + args.model_name))
-        ce_result = list(np.load('ce_result_{}.npy'.format(args.model_name)))
-        kld_result = list(np.load('kld_result_npy_{}.npy'.format(args.model_name)))
+        rvae.load_state_dict(t.load('saved_models/trained_RVAE_' + args.model_name))
+        ce_result = list(np.load('saved_models/ce_result_{}.npy'.format(args.model_name)))
+        kld_result = list(np.load('saved_models/kld_result_npy_{}.npy'.format(args.model_name)))
 
     if args.use_cuda:
         rvae = rvae.cuda()
@@ -107,6 +107,6 @@ if __name__ == "__main__":
 
         # save model
         if iteration % 10000 == 0 or iteration == (args.num_iterations - 1):
-            t.save(rvae.state_dict(), 'trained_RVAE_' + args.model_name)
-            np.save('ce_result_{}.npy'.format(args.model_name), np.array(ce_result))
-            np.save('kld_result_npy_{}'.format(args.model_name), np.array(kld_result))
+            t.save(rvae.state_dict(), 'saved_models/trained_RVAE_' + args.model_name)
+            np.save('saved_models/ce_result_{}.npy'.format(args.model_name), np.array(ce_result))
+            np.save('saved_models/kld_result_npy_{}'.format(args.model_name), np.array(kld_result))
