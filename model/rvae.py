@@ -137,14 +137,15 @@ class RVAE(nn.Module):
             target = target.squeeze().view(-1)
             prediction = F.softmax(logits)
 
-            print(prediction.size(), target.size())
+            # print(prediction.size(), target.size())
             prediction = prediction.data.cpu().numpy()
             target = target.data.cpu().numpy()
             
             target_onehot = np.zeros([target.shape[-1], self.params.word_vocab_size], dtype=np.float32)
-            print(target_onehot.shape, prediction.shape)
+            # print(target_onehot.shape, prediction.shape)
 
-            target_onehot[:, target] = 1.0
+            target_onehot[np.arange(target.shape[-1]), target] = 1.0
+            # print(np.sum(target_onehot[0]))
 
             predicted_sentence = ' '.join(
                 [batch_loader.sample_word_from_distribution(d) for d in prediction])
