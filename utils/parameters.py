@@ -23,4 +23,4 @@ class Parameters:
         self.decoder_rnn_size = 800
         self.decoder_num_layers = 2
 
-        self.kld_final_weight = 0.1
+        self.kld_final_weight = 0.0001
