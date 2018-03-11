@@ -28,10 +28,8 @@ if __name__ == "__main__":
                         help='dropout (default: 0.3)')
     parser.add_argument('--use-trained', type=bool, default=False, metavar='UT',
                         help='load pretrained model (default: False)')
-    parser.add_argument('--ce-result', default='', metavar='CE',
-                        help='ce result path (default: '')')
-    parser.add_argument('--kld-result', default='', metavar='KLD',
-                        help='ce result path (default: '')')
+    parser.add_argument('--model-name', default='', metavar='MN',
+                        help='name of model to save (default: '')')
     args = parser.parse_args()
 
     batch_loader = BatchLoader('')
@@ -41,8 +39,14 @@ if __name__ == "__main__":
                             batch_loader.chars_vocab_size)
 
     rvae = RVAE(parameters)
+    ce_result = []
+    kld_result = []
+
     if args.use_trained:
-        rvae.load_state_dict(t.load('trained_RVAE'))
+        rvae.load_state_dict(t.load('trained_RVAE_' + args.model_name))
+        ce_result = list(np.load('ce_result_{}.npy'.format(args.model_name)))
+        kld_result = list(np.load('kld_result_npy_{}'.format(args.model_name)))
+
     if args.use_cuda:
         rvae = rvae.cuda()
 
@@ -50,9 +54,6 @@ if __name__ == "__main__":
 
     train_step = rvae.trainer(optimizer, batch_loader)
     validate, valid_sample = rvae.validater(batch_loader)
-
-    ce_result = []
-    kld_result = []
 
     for iteration in range(args.num_iterations):
 
@@ -71,6 +72,7 @@ if __name__ == "__main__":
             print(coef)
             print('------------------------------')
 
+        # validation
         if iteration % 300 == 0:
             target_sentence, predicted_sentence = valid_sample(args.use_cuda)
             cross_entropy, kld = validate(args.batch_size, args.use_cuda)
@@ -92,6 +94,7 @@ if __name__ == "__main__":
             ce_result += [cross_entropy]
             kld_result += [kld]
 
+        # generate sample
         if iteration % 300 == 0:
             source = 'i want to buy a book'
             result = build_paraphrase(source, batch_loader, rvae, args, parameters)
@@ -102,7 +105,8 @@ if __name__ == "__main__":
             print('sample : ', result)
             print('------------------------------')
 
-    t.save(rvae.state_dict(), 'trained_RVAE')
-
-    np.save('ce_result_{}.npy'.format(args.ce_result), np.array(ce_result))
-    np.save('kld_result_npy_{}'.format(args.kld_result), np.array(kld_result))
+        # save model
+        if iteration % 10000 == 0 or iteration == (args.num_iterations - 1):
+            t.save(rvae.state_dict(), 'trained_RVAE_' + args.model_name)
+            np.save('ce_result_{}.npy'.format(args.model_name), np.array(ce_result))
+            np.save('kld_result_npy_{}'.format(args.model_name), np.array(kld_result))
