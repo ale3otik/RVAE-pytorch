@@ -49,7 +49,7 @@ if __name__ == "__main__":
     optimizer = Adam(rvae.learnable_parameters(), args.learning_rate)
 
     train_step = rvae.trainer(optimizer, batch_loader)
-    validate = rvae.validater(batch_loader)
+    validate, valid_sample = rvae.validater(batch_loader)
 
     ce_result = []
     kld_result = []
@@ -72,6 +72,7 @@ if __name__ == "__main__":
             print('------------------------------')
 
         if iteration % 300 == 0:
+            target_sentence, predicted_sentence = valid_sample(args.use_cuda)
             cross_entropy, kld = validate(args.batch_size, args.use_cuda)
 
             cross_entropy = cross_entropy.data.cpu().numpy()[0]
@@ -84,6 +85,9 @@ if __name__ == "__main__":
             print('-------------KLD--------------')
             print(kld)
             print('------------------------------')
+            print('target : ', target_sentence)
+            print('sample : ', predicted_sentence)
+            print('------------------------------')
 
             ce_result += [cross_entropy]
             kld_result += [kld]
@@ -94,8 +98,8 @@ if __name__ == "__main__":
             print('\n')
             print('------------SAMPLE------------')
             print('------------------------------')
-            print('source', source)
-            print('sample', result)
+            print('source : ', source)
+            print('sample : ', result)
             print('------------------------------')
 
     t.save(rvae.state_dict(), 'trained_RVAE')

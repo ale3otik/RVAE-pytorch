@@ -121,6 +121,33 @@ class RVAE(nn.Module):
         return train
 
     def validater(self, batch_loader):
+        def valid_sample(use_cuda):
+            input = batch_loader.next_batch(1, 'valid')
+            input = [Variable(t.from_numpy(var)) for var in input]
+            input = [var.long() for var in input]
+            input = [var.cuda() if use_cuda else var for var in input]
+
+            [encoder_word_input, encoder_character_input, decoder_word_input, decoder_character_input, target] = input
+
+            logits, _, kld = self(0.,
+                                  encoder_word_input, encoder_character_input,
+                                  decoder_word_input, decoder_character_input,
+                                  z=None)
+            logits = logits.squeeze().view(-1, self.params.word_vocab_size)
+            target = target.squeeze().view(-1)
+            prediction = F.softmax(logits)
+
+            print(prediction.size(), target.size())
+            prediction = prediction.data.cpu().numpy()
+            target = target.data.cpu().numpy()
+
+            predicted_sentence = ''.join(
+                [batch_loader.sample_most_probable_word(d) for d in prediction])
+            target_sentence = ''.join(
+                [batch_loader.sample_most_probable_word(d) for d in target])
+
+            return target_sentence, predicted_sentence
+
         def validate(batch_size, use_cuda):
             input = batch_loader.next_batch(batch_size, 'valid')
             input = [Variable(t.from_numpy(var)) for var in input]
@@ -141,7 +168,7 @@ class RVAE(nn.Module):
 
             return cross_entropy, kld
 
-        return validate
+        return validate, valid_sample
 
     def sample(self, 
         batch_loader,
@@ -173,7 +200,8 @@ class RVAE(nn.Module):
             logits = logits.view(-1, self.params.word_vocab_size)
             prediction = F.softmax(logits)
 
-            word = batch_loader.sample_word_from_distribution(prediction.data.cpu().numpy()[-1])
+            # word = batch_loader.sample_word_from_distribution(prediction.data.cpu().numpy()[-1])
+            word = batch_loader.sample_most_probable_word(prediction.data.cpu().numpy()[-1])
 
             if word == batch_loader.end_token:
                 break

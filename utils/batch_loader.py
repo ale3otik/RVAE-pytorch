@@ -314,6 +314,10 @@ class BatchLoader:
         x = np.zeros((self.words_vocab_size, 1))
         x[ix] = 1
         return self.idx_to_word[np.argmax(x)]
+    
+    def sample_most_probable_word(self, distribution):
+        ix = np.argmax(distribution)
+        return self.idx_to_word[ix]
 
     def encode_characters(self, characters):
         word_len = len(characters)
