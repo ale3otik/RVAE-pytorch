@@ -206,8 +206,8 @@ class RVAE(nn.Module):
             logits = logits.view(-1, self.params.word_vocab_size)
             prediction = F.softmax(logits)
 
-            # word = batch_loader.sample_word_from_distribution(prediction.data.cpu().numpy()[-1])
-            word = batch_loader.sample_most_probable_word(prediction.data.cpu().numpy()[-1])
+            word = batch_loader.sample_word_from_distribution(prediction.data.cpu().numpy()[-1])
+            # word = batch_loader.sample_most_probable_word(prediction.data.cpu().numpy()[-1])
 
             if word == batch_loader.end_token:
                 break
