@@ -44,6 +44,6 @@ if __name__ == '__main__':
         print('input: ', input_phrase)
         print('sampled: ')
         for iteration in range(args.num_sample):
-            print(rvae.conditioned_sample(input_phrase, batch_loader, rvae, args))
+            print(rvae.conditioned_sample(input_phrase, batch_loader, args))
             print()
             

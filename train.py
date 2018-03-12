@@ -8,7 +8,6 @@ from torch.optim import Adam
 from utils.batch_loader import BatchLoader
 from utils.parameters import Parameters
 from model.rvae import RVAE
-from paraphrase import build_paraphrase
 
 if __name__ == "__main__":
 
@@ -101,7 +100,7 @@ if __name__ == "__main__":
         if iteration % 300 == 0:
             # source = 'she should control the speed of her car'
             source = 'the metal products concern currently has N million common shares outstanding'
-            result = build_paraphrase(source, batch_loader, rvae, args, parameters)
+            result = rvae.conditioned_sample(source, batch_loader, args)
             print('\n')
             print('------------SAMPLE------------')
             print('------------------------------')
