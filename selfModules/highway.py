@@ -8,19 +8,9 @@ class Highway(nn.Module):
         super(Highway, self).__init__()
 
         self.num_layers = num_layers
-
         self.nonlinear = nn.ModuleList([nn.Linear(size, size) for _ in range(num_layers)])
-        # for i, module in enumerate(self.nonlinear):
-        #     self._add_to_parameters(module.parameters(), 'nonlinear_module_{}'.format(i))
-
         self.linear = nn.ModuleList([nn.Linear(size, size) for _ in range(num_layers)])
-        # for i, module in enumerate(self.linear):
-        #     self._add_to_parameters(module.parameters(), 'linear_module_{}'.format(i))
-
         self.gate = nn.ModuleList([nn.Linear(size, size) for _ in range(num_layers)])
-        # for i, module in enumerate(self.gate):
-        #     self._add_to_parameters(module.parameters(), 'gate_module_{}'.format(i))
-
         self.f = f
 
     def forward(self, x):

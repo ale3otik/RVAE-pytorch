@@ -121,7 +121,7 @@ class RVAE(nn.Module):
         return train
 
     def validater(self, batch_loader):
-        def valid_sample(use_cuda):
+        def valid_sample(use_cuda, dropout):
             input = batch_loader.next_batch(1, 'valid')
             input = [Variable(t.from_numpy(var)) for var in input]
             input = [var.long() for var in input]
@@ -129,7 +129,7 @@ class RVAE(nn.Module):
 
             [encoder_word_input, encoder_character_input, decoder_word_input, decoder_character_input, target] = input
 
-            logits, _, kld = self(0.,
+            logits, _, kld = self(dropout,
                                   encoder_word_input, encoder_character_input,
                                   decoder_word_input, decoder_character_input,
                                   z=None)
@@ -207,7 +207,7 @@ class RVAE(nn.Module):
             prediction = F.softmax(logits)
 
             word = batch_loader.sample_word_from_distribution(prediction.data.cpu().numpy()[-1])
-            # word = batch_loader.sample_most_probable_word(prediction.data.cpu().numpy()[-1])
+            # word = batch_loader.sample_most_pvirobable_word(prediction.data.cpu().numpy()[-1])
 
             if word == batch_loader.end_token:
                 break

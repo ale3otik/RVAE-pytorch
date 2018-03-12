@@ -74,7 +74,6 @@ if __name__ == "__main__":
 
         # validation
         if iteration % 300 == 0:
-            target_sentence, predicted_sentence = valid_sample(args.use_cuda)
             cross_entropy, kld = validate(args.batch_size, args.use_cuda)
 
             cross_entropy = cross_entropy.data.cpu().numpy()[0]
@@ -87,16 +86,20 @@ if __name__ == "__main__":
             print('-------------KLD--------------')
             print(kld)
             print('------------------------------')
-            print('target : ', target_sentence)
-            print('sample : ', predicted_sentence)
-            print('------------------------------')
+            
+            print('dropout = ' args.dropout)
+            for i in range(3):
+                target_sentence, predicted_sentence = valid_sample(args.use_cuda, args.dropout)
+                print(' target : ', target_sentence)
+                print('sample : ', predicted_sentence)
+                print('------------------------------')
 
             ce_result += [cross_entropy]
             kld_result += [kld]
 
         # generate sample
         if iteration % 300 == 0:
-            source = 'i want to buy a book'
+            source = 'she should control the speed of her car'
             result = build_paraphrase(source, batch_loader, rvae, args, parameters)
             print('\n')
             print('------------SAMPLE------------')
