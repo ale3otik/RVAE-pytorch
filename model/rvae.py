@@ -224,3 +224,33 @@ class RVAE(nn.Module):
                 decoder_word_input, decoder_character_input = decoder_word_input.cuda(), decoder_character_input.cuda()
 
         return result
+
+    def conditioned_sample(self, input_phrase, batch_loader, args):
+        encoder_word_input_np = np.array([[batch_loader.word_to_idx[w] for w in input_phrase.split()]], dtype=np.int64)
+        encoder_character_input_np = np.array([[batch_loader.encode_characters(
+            [c for c in w]) for w in input_phrase.split()]])
+
+        # print('word shape ' , encoder_word_input_np)
+        # print('char shape ' , encoder_character_input_np)
+
+        encoder_word_input = Variable(t.from_numpy(encoder_word_input_np).long())
+        encoder_character_input = Variable(t.from_numpy(encoder_character_input_np).long())
+        if args.use_cuda:
+            encoder_word_input = encoder_word_input.cuda()
+            encoder_character_input = encoder_character_input.cuda()
+
+        # print('tensor word size ', encoder_word_input.size())
+        # print('tensor character size ', encoder_character_input.size())
+        # encode input into distribution parameters
+        mu, logvar = self.encode_to_mu_logvar(encoder_word_input, encoder_character_input)
+        std = t.exp(0.5 * logvar)
+
+        # sample N(0, 1)
+        z = Variable(t.randn([1, self.params.latent_variable_size]))
+        if args.use_cuda:
+            z = z.cuda()
+        
+        # transform into N(mu , std**2)
+        z = z * std + mu
+
+        return self.sample(batch_loader, 50, z, args.use_cuda)

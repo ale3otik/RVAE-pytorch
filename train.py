@@ -99,7 +99,8 @@ if __name__ == "__main__":
 
         # generate sample
         if iteration % 300 == 0:
-            source = 'she should control the speed of her car'
+            # source = 'she should control the speed of her car'
+            source = 'the metal products concern currently has N million common shares outstanding'
             result = build_paraphrase(source, batch_loader, rvae, args, parameters)
             print('\n')
             print('------------SAMPLE------------')
