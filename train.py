@@ -87,7 +87,7 @@ if __name__ == "__main__":
             print(kld)
             print('------------------------------')
             
-            print('dropout = ' args.dropout)
+            print('dropout = ', args.dropout)
             for i in range(3):
                 target_sentence, predicted_sentence = valid_sample(args.use_cuda, args.dropout)
                 print(' target : ', target_sentence)
