@@ -225,10 +225,11 @@ class BatchLoader:
 
         self.just_words = [word for line in self.word_tensor[0] for word in line]
 
-    def next_batch(self, batch_size, target_str):
+    def next_batch(self, batch_size, target_str, indexes=None):
         target = 0 if target_str == 'train' else 1
 
-        indexes = np.array(np.random.randint(self.num_lines[target], size=batch_size))
+        if indexes is None:
+            indexes = np.array(np.random.randint(self.num_lines[target], size=batch_size))
 
         encoder_word_input = [self.word_tensor[target][index] for index in indexes]
         encoder_character_input = [self.character_tensor[target][index] for index in indexes]
@@ -267,7 +268,8 @@ class BatchLoader:
             encoder_character_input[i] = [self.encode_characters(self.pad_token)] * to_add + line[::-1]
 
         return np.array(encoder_word_input), np.array(encoder_character_input), \
-               np.array(decoder_word_input), np.array(decoder_character_input), np.array(decoder_output)
+               np.array(decoder_word_input), np.array(decoder_character_input), \
+               np.array(decoder_output)
 
     def next_embedding_seq(self, seq_len):
         """
@@ -328,3 +330,10 @@ class BatchLoader:
     def decode_characters(self, characters_idx):
         characters = [self.idx_to_char[i] for i in characters_idx]
         return ''.join(characters)
+
+    def sentence_to_word_input(self, sentence):
+        return np.array([[self.word_to_idx[w] for w in sentence.split()[::-1]]])
+    
+    def sentence_to_character_input(self, sentence):
+        return np.array([[self.encode_characters([c for c in w]) for w in sentence.split()[::-1]]])
+

@@ -52,7 +52,7 @@ if __name__ == "__main__":
     optimizer = Adam(rvae.learnable_parameters(), args.learning_rate)
 
     train_step = rvae.trainer(optimizer, batch_loader)
-    validate, valid_sample = rvae.validater(batch_loader)
+    validate, validation_sample = rvae.validater(batch_loader)
 
     for iteration in range(args.num_iterations):
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
             
             print('dropout = ', args.dropout)
             for i in range(3):
-                target_sentence, predicted_sentence = valid_sample(args.use_cuda, args.dropout)
+                target_sentence, predicted_sentence = validation_sample(args.use_cuda)
                 print(' target : ', target_sentence)
                 print('sample : ', predicted_sentence)
                 print('------------------------------')
@@ -98,8 +98,7 @@ if __name__ == "__main__":
 
         # generate sample
         if iteration % 300 == 0:
-            # source = 'she should control the speed of her car'
-            source = 'the metal products concern currently has N million common shares outstanding'
+            source = 'she should control the speed of her car'
             result = rvae.conditioned_sample(source, batch_loader, args)
             print('\n')
             print('------------SAMPLE------------')

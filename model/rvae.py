@@ -121,38 +121,27 @@ class RVAE(nn.Module):
         return train
 
     def validater(self, batch_loader):
-        def valid_sample(use_cuda, dropout):
+        def validation_sample(use_cuda):
             input = batch_loader.next_batch(1, 'valid')
             input = [Variable(t.from_numpy(var)) for var in input]
             input = [var.long() for var in input]
             input = [var.cuda() if use_cuda else var for var in input]
 
-            [encoder_word_input, encoder_character_input, decoder_word_input, decoder_character_input, target] = input
-
-            logits, _, kld = self(dropout,
-                                  encoder_word_input, encoder_character_input,
-                                  decoder_word_input, decoder_character_input,
-                                  z=None)
-            logits = logits.squeeze().view(-1, self.params.word_vocab_size)
-            target = target.squeeze().view(-1)
-            prediction = F.softmax(logits)
-
-            # print(prediction.size(), target.size())
-            prediction = prediction.data.cpu().numpy()
-            target = target.data.cpu().numpy()
+            [encoder_word_input, 
+             encoder_character_input, 
+             decoder_word_input, 
+             decoder_character_input, 
+             target] = input
             
+            target = target.squeeze().view(-1).data.cpu().numpy()           
             target_onehot = np.zeros([target.shape[-1], self.params.word_vocab_size], dtype=np.float32)
-            # print(target_onehot.shape, prediction.shape)
-
             target_onehot[np.arange(target.shape[-1]), target] = 1.0
-            # print(np.sum(target_onehot[0]))
 
-            predicted_sentence = ' '.join(
-                [batch_loader.sample_word_from_distribution(d) for d in prediction])
             target_sentence = ' '.join(
                 [batch_loader.sample_word_from_distribution(d) for d in target_onehot])
 
-            return target_sentence, predicted_sentence
+            return target_sentence, self.sample(batch_loader, 50, None, use_cuda, 
+                                encoder_word_input, encoder_character_input)
 
         def validate(batch_size, use_cuda):
             input = batch_loader.next_batch(batch_size, 'valid')
@@ -174,23 +163,20 @@ class RVAE(nn.Module):
 
             return cross_entropy, kld
 
-        return validate, valid_sample
+        return validate, validation_sample
 
     def sample(self, 
         batch_loader,
         seq_len, 
         seed, 
-        use_cuda):
+        use_cuda,
+        encoder_word_input=None, encoder_character_input=None):
         decoder_word_input_np, decoder_character_input_np = batch_loader.go_input(1)
 
         # print('decoder word input : ', decoder_word_input_np)
 
         decoder_word_input = Variable(t.from_numpy(decoder_word_input_np).long())
         decoder_character_input = Variable(t.from_numpy(decoder_character_input_np).long())
-
-        print('seed ', seed.size())
-        print('decoder_word_input', decoder_word_input.size())
-
         if use_cuda:
             decoder_word_input, decoder_character_input = decoder_word_input.cuda(), decoder_character_input.cuda()
 
@@ -199,7 +185,7 @@ class RVAE(nn.Module):
         initial_state = None
 
         for i in range(seq_len):
-            logits, initial_state, _ = self(0., None, None,
+            logits, initial_state, _ = self(0., encoder_word_input, encoder_character_input,
                                             decoder_word_input, decoder_character_input,
                                             seed, initial_state)
 
@@ -226,31 +212,15 @@ class RVAE(nn.Module):
         return result
 
     def conditioned_sample(self, input_phrase, batch_loader, args):
-        encoder_word_input_np = np.array([[batch_loader.word_to_idx[w] for w in input_phrase.split()]], dtype=np.int64)
-        encoder_character_input_np = np.array([[batch_loader.encode_characters(
-            [c for c in w]) for w in input_phrase.split()]])
-
-        # print('word shape ' , encoder_word_input_np)
-        # print('char shape ' , encoder_character_input_np)
-
+        encoder_word_input_np = batch_loader.sentence_to_word_input(input_phrase)
+        encoder_character_input_np = batch_loader.sentence_to_character_input(input_phrase)
         encoder_word_input = Variable(t.from_numpy(encoder_word_input_np).long())
         encoder_character_input = Variable(t.from_numpy(encoder_character_input_np).long())
+
         if args.use_cuda:
             encoder_word_input = encoder_word_input.cuda()
             encoder_character_input = encoder_character_input.cuda()
 
-        # print('tensor word size ', encoder_word_input.size())
-        # print('tensor character size ', encoder_character_input.size())
-        # encode input into distribution parameters
-        mu, logvar = self.encode_to_mu_logvar(encoder_word_input, encoder_character_input)
-        std = t.exp(0.5 * logvar)
+        return self.sample(batch_loader, 50, None, args.use_cuda, 
+                                encoder_word_input, encoder_character_input)
 
-        # sample N(0, 1)
-        z = Variable(t.randn([1, self.params.latent_variable_size]))
-        if args.use_cuda:
-            z = z.cuda()
-        
-        # transform into N(mu , std**2)
-        z = z * std + mu
-
-        return self.sample(batch_loader, 50, z, args.use_cuda)
