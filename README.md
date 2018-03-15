@@ -1,6 +1,6 @@
-# Pytorch Paraphrases Generator with RVAE
+# RVAE Generator
 
-Paraphrases generator for "intent recognition without datasets" task.
+Base for paraphrases generator for "intent recognition without datasets" task.
 
 RVAE Base: https://github.com/kefirski/pytorch_RVAE
 
